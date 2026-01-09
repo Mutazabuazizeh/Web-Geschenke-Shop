@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Warenkorb</title>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <meta name="author" content="Gruppe X – Dein Name">
+</head>
+<body>
+
+  <div id="page-cart">
+    <h1>Warenkorb</h1>
+
+    <div v-if="cart.length === 0">
+      <p>Der Warenkorb ist leer.</p>
+      <a href="index.html">Zurück zum Shop</a>
+    </div>
+
+    <table v-else border="1" cellpadding="5">
+      <thead>
+        <tr>
+          <th>Produkt</th>
+          <th>Preis</th>
+          <th>Menge</th>
+          <th>Summe</th>
+          <th>Aktion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in cart" :key="item.id">
+          <td>{{ item.title }}</td>
+          <td>{{ item.price.toFixed(2) }} €</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ (item.price * item.quantity).toFixed(2) }} €</td>
+          <td>
+            <button @click="orderProduct(item)">+</button>
+            <button @click="removeProduct(item)">−</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div v-if="cart.length > 0">
+      <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
+      <p>MwSt (7%): {{ cartVat.toFixed(2) }} €</p>
+      <p><strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong></p>
+
+      <a href="index.html">Weiter einkaufen</a>
+    </div>
+  </div>
+
+  <script src="js/cart.js"></script>
+</body>
+</html>

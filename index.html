@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Weihnachts-Shop</title>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <meta name="author" content="Gruppe X – Dein Name">
+</head>
+<body>
+
+  <div id="page-catalog">
+    <h1>{{ title }}</h1>
+
+    <input
+      type="text"
+      placeholder="Suche..."
+      data-testid="search-input"
+      v-model="search"
+    >
+
+    <div
+      class="product"
+      data-testid="product"
+      v-for="product in filteredProducts"
+      :key="product.id"
+    >
+      <img :src="product.image" data-testid="product-image">
+
+      <h3 data-testid="product-title">
+        {{ product.title }}
+      </h3>
+
+      <span data-testid="product-price">
+        {{ product.price.toFixed(2) }} €
+      </span>
+
+      <div>
+        <button
+          data-testid="product-order"
+          @click="orderProduct(product)"
+        >
+          +
+        </button>
+
+        <span>
+          {{
+            cart.find(p => p.id === product.id)?.quantity || 0
+          }}
+        </span>
+
+        <button
+          @click="removeProduct(product)"
+          :disabled="!cart.find(p => p.id === product.id)"
+        >
+          −
+        </button>
+      </div>
+    </div>
+
+    <div id="cart-summary">
+      <p>
+        Produkte:
+        <span data-testid="cart-total-positions">
+          {{ cartTotalPositions }}
+        </span>
+      </p>
+
+      <p>
+        Stück:
+        <span data-testid="cart-total-items">
+          {{ cartTotalItems }}
+        </span>
+      </p>
+
+      <p>
+        Zwischensumme:
+        {{ cartNetPrice.toFixed(2) }} €
+      </p>
+
+      <p>
+        MwSt (7%):
+        {{ cartVat.toFixed(2) }} €
+      </p>
+
+      <p>
+        <strong>
+          Gesamtpreis:
+          {{ cartGrossPrice.toFixed(2) }} €
+        </strong>
+      </p>
+
+      <p>
+        <a href="cart.html">Zum Warenkorb</a>
+      </p>
+    </div>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
