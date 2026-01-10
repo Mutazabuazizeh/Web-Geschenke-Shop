@@ -5,20 +5,7 @@ createApp({
     return {
       title: 'Weihnachtsgeschenke-Shop',
       search: '',
-      products: [
-        {
-          id: 1,
-          title: 'Weihnachtsbuch',
-          price: 19.9,
-          image: './img/book.png'
-        },
-        {
-          id: 2,
-          title: 'Kerze',
-          price: 9.5,
-          image: './img/candle.png'
-        }
-      ],
+      products: [],
       cart: [],
       messages: []
     }
@@ -59,10 +46,7 @@ createApp({
   methods: {
     addMessage(text) {
       this.messages.push(text)
-
-      setTimeout(() => {
-        this.messages.shift()
-      }, 3000)
+      setTimeout(() => this.messages.shift(), 3000)
     },
 
     orderProduct(product) {
@@ -70,7 +54,6 @@ createApp({
 
       if (item) {
         item.quantity++
-        this.addMessage('Produktmenge erhöht')
       } else {
         this.cart.push({
           id: product.id,
@@ -78,30 +61,30 @@ createApp({
           price: product.price,
           quantity: 1
         })
-        this.addMessage('Produkt zum Warenkorb hinzugefügt')
       }
     },
 
     removeProduct(product) {
       const item = this.cart.find(p => p.id === product.id)
-
-      if (!item) {
-        this.addMessage('Produkt ist nicht im Warenkorb')
-        return
-      }
+      if (!item) return
 
       item.quantity--
-
       if (item.quantity === 0) {
         this.cart = this.cart.filter(p => p.id !== product.id)
-        this.addMessage('Produkt aus dem Warenkorb entfernt')
-      } else {
-        this.addMessage('Produktmenge reduziert')
       }
     }
   },
 
   mounted() {
+    fetch('php/products.php')
+      .then(res => res.json())
+      .then(data => {
+        this.products = data
+      })
+      .catch(() => {
+        this.addMessage('Fehler beim Laden der Produkte')
+      })
+
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       this.cart = JSON.parse(savedCart)
