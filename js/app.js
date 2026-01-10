@@ -19,7 +19,8 @@ createApp({
           image: './img/candle.png'
         }
       ],
-      cart: []
+      cart: [],
+      messages: []
     }
   },
 
@@ -56,11 +57,20 @@ createApp({
   },
 
   methods: {
+    addMessage(text) {
+      this.messages.push(text)
+
+      setTimeout(() => {
+        this.messages.shift()
+      }, 3000)
+    },
+
     orderProduct(product) {
       const item = this.cart.find(p => p.id === product.id)
 
       if (item) {
         item.quantity++
+        this.addMessage('Produktmenge erhöht')
       } else {
         this.cart.push({
           id: product.id,
@@ -68,18 +78,25 @@ createApp({
           price: product.price,
           quantity: 1
         })
+        this.addMessage('Produkt zum Warenkorb hinzugefügt')
       }
     },
 
     removeProduct(product) {
       const item = this.cart.find(p => p.id === product.id)
 
-      if (!item) return
+      if (!item) {
+        this.addMessage('Produkt ist nicht im Warenkorb')
+        return
+      }
 
       item.quantity--
 
       if (item.quantity === 0) {
         this.cart = this.cart.filter(p => p.id !== product.id)
+        this.addMessage('Produkt aus dem Warenkorb entfernt')
+      } else {
+        this.addMessage('Produktmenge reduziert')
       }
     }
   },

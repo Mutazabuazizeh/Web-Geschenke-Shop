@@ -7,6 +7,22 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
   <meta name="author" content="Gruppe X – Dein Name">
+
+  <style>
+    #message-bar {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+    }
+
+    .message {
+      background: #333;
+      color: #fff;
+      padding: 8px 12px;
+      margin-top: 5px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
 
@@ -94,6 +110,17 @@
       <p>
         <a href="cart.html">Zum Warenkorb</a>
       </p>
+    </div>
+
+    <!-- ✅ Message Bar داخل Vue -->
+    <div id="message-bar">
+      <div
+        v-for="(msg, index) in messages"
+        :key="index"
+        class="message"
+      >
+        {{ msg }}
+      </div>
     </div>
 
   </div>
