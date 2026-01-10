@@ -21,7 +21,7 @@ createApp({
 
     cartNetPrice() {
       return this.cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (s, i) => s + i.price * i.quantity,
         0
       )
     },
@@ -84,7 +84,10 @@ createApp({
     fetch('php/products.php')
       .then(res => res.json())
       .then(data => {
-        this.products = data
+        this.products = data.map(p => ({
+          ...p,
+          price: Number(p.price)
+        }))
       })
       .catch(() => {
         this.addMessage('Fehler beim Laden der Produkte')
