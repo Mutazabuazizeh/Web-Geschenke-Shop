@@ -1,19 +1,15 @@
 <?php
 header('Content-Type: application/json');
+require 'db.php';
 
-$products = [
-  [
-    "id" => 1,
-    "title" => "Weihnachtsbuch",
-    "price" => 19.9,
-    "image" => "./img/book.png"
-  ],
-  [
-    "id" => 2,
-    "title" => "Kerze",
-    "price" => 9.5,
-    "image" => "./img/candle.png"
-  ]
-];
+$result = $link->query(
+  "SELECT id, title, price, image FROM products WHERE stock > 0"
+);
+
+$products = [];
+
+while ($row = $result->fetch_assoc()) {
+  $products[] = $row;
+}
 
 echo json_encode($products);
