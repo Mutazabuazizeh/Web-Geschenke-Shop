@@ -1,5 +1,5 @@
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require 'db.php';
 
 $result = $link->query(
@@ -12,4 +12,5 @@ while ($row = $result->fetch_assoc()) {
   $products[] = $row;
 }
 
-echo json_encode($products);
+
+echo json_encode($products, JSON_UNESCAPED_UNICODE);
