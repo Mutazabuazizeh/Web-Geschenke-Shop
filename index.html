@@ -2,74 +2,57 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Weihnachts-Shop</title>
+  <title>Weihnachtsgeschenke-Shop</title>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-  <meta name="author" content="Gruppe X – Dein Name">
 
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <div id="page-catalog">
-    <h1>{{ title }}</h1>
+<div id="page-catalog">
+  <h1>{{ title }}</h1>
 
-    <input
-      type="text"
-      placeholder="Suche..."
-      v-model="search"
-    >
+  <input
+    type="text"
+    placeholder="Suche..."
+    v-model="search"
+  >
 
-    <div
-      class="product"
-      v-for="product in filteredProducts"
-      :key="product.id"
-    >
-      <img :src="product.image">
+  <div
+    class="product"
+    v-for="product in filteredProducts"
+    :key="product.id"
+  >
+    <img :src="product.image" width="150">
 
-      <h3>{{ product.title }}</h3>
+    <h3>{{ product.title }}</h3>
 
-      <span>{{ product.price.toFixed(2) }} €</span>
+    <p>{{ product.price.toFixed(2) }} €</p>
 
-      <div>
-        <button @click="orderProduct(product)">+</button>
-
-        <span>
-          {{ cart.find(p => p.id === product.id)?.quantity || 0 }}
-        </span>
-
-        <button
-          @click="removeProduct(product)"
-          :disabled="!cart.find(p => p.id === product.id)"
-        >
-          −
-        </button>
-      </div>
-    </div>
-
-    <div id="cart-summary">
-      <p>Produkte: {{ cartTotalPositions }}</p>
-      <p>Stück: {{ cartTotalItems }}</p>
-      <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
-      <p>MwSt (7%): {{ cartVat.toFixed(2) }} €</p>
-      <p><strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong></p>
-
-      <button @click="checkout">Bestellung abschicken</button>
-    </div>
-
-    <div id="message-bar">
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        class="message"
-      >
-        {{ msg }}
-      </div>
-    </div>
-
+    <button @click="orderProduct(product)">+</button>
+    <span>{{ cart.find(p => p.id === product.id)?.quantity || 0 }}</span>
+    <button
+      @click="removeProduct(product)"
+      :disabled="!cart.find(p => p.id === product.id)"
+    >−</button>
   </div>
 
-  <script src="js/app.js"></script>
+  <hr>
+
+  <p>Produkte: {{ cartTotalPositions }}</p>
+  <p>Stück: {{ cartTotalItems }}</p>
+  <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
+  <p>MwSt (7%): {{ cartVat.toFixed(2) }} €</p>
+  <strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong>
+
+  <div id="message-bar">
+    <div class="message" v-for="(msg, i) in messages" :key="i">
+      {{ msg }}
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
 </body>
 </html>

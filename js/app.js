@@ -54,6 +54,7 @@ createApp({
 
       if (item) {
         item.quantity++
+        this.addMessage('Produktmenge erhöht')
       } else {
         this.cart.push({
           id: product.id,
@@ -61,8 +62,8 @@ createApp({
           price: product.price,
           quantity: 1
         })
+        this.addMessage('Produkt hinzugefügt')
       }
-      this.addMessage('Produkt hinzugefügt')
     },
 
     removeProduct(product) {
@@ -72,53 +73,21 @@ createApp({
       item.quantity--
       if (item.quantity === 0) {
         this.cart = this.cart.filter(p => p.id !== product.id)
+        this.addMessage('Produkt entfernt')
+      } else {
+        this.addMessage('Produktmenge reduziert')
       }
-      this.addMessage('Produkt entfernt')
-    },
-
-    checkout() {
-      if (this.cart.length === 0) {
-        this.addMessage('Warenkorb ist leer')
-        return
-      }
-
-      fetch('php/order.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cart: this.cart,
-          total: this.cartGrossPrice
-        })
-      })
-        .then(r => r.json())
-        .then(res => {
-          if (res.success) {
-            this.addMessage('Bestellung gespeichert')
-            this.cart = []
-            localStorage.removeItem('cart')
-          } else {
-            this.addMessage('Fehler beim Speichern')
-          }
-        })
-        .catch(() => this.addMessage('Serverfehler'))
     }
   },
 
   mounted() {
     fetch('php/products.php')
-      .then(r => r.json())
-      .then(data => this.products = data)
-
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) this.cart = JSON.parse(savedCart)
-  },
-
-  watch: {
-    cart: {
-      deep: true,
-      handler(c) {
-        localStorage.setItem('cart', JSON.stringify(c))
-      }
-    }
+      .then(res => res.json())
+      .then(data => {
+        this.products = data
+      })
+      .catch(() => {
+        this.addMessage('Fehler beim Laden der Produkte')
+      })
   }
 }).mount('#page-catalog')
