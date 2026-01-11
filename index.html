@@ -45,6 +45,9 @@
   <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
   <p>MwSt (7%): {{ cartVat.toFixed(2) }} €</p>
   <strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong>
+<p>
+  <a href="cart.html">Zum Warenkorb</a>
+</p>
 
   <div id="message-bar">
     <div class="message" v-for="(msg, i) in messages" :key="i">

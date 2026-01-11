@@ -71,6 +71,7 @@ createApp({
       if (!item) return
 
       item.quantity--
+
       if (item.quantity === 0) {
         this.cart = this.cart.filter(p => p.id !== product.id)
         this.addMessage('Produkt entfernt')
@@ -92,5 +93,19 @@ createApp({
       .catch(() => {
         this.addMessage('Fehler beim Laden der Produkte')
       })
+
+    const savedCart = localStorage.getItem('cart')
+    if (savedCart) {
+      this.cart = JSON.parse(savedCart)
+    }
+  },
+
+  watch: {
+    cart: {
+      deep: true,
+      handler(newCart) {
+        localStorage.setItem('cart', JSON.stringify(newCart))
+      }
+    }
   }
 }).mount('#page-catalog')
