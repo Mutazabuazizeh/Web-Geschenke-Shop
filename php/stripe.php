@@ -1,26 +1,24 @@
 <?php
-require_once('vendor/autoload.php');
+require './stripe-php-master/init.php';
 
-\Stripe\Stripe::setApiKey('PUT_YOUR_STRIPE_SECRET_KEY_HERE');
+$secretKey = getenv('STRIPE_SECRET_KEY');
+$publicKey = getenv('STRIPE_PUBLIC_KEY');
 
-$amount = $_POST['amount'];
+\Stripe\Stripe::setApiKey($secretKey);
 
 $session = \Stripe\Checkout\Session::create([
   'payment_method_types' => ['card'],
-  'line_items' => [[
-    'price_data' => [
-      'currency' => 'eur',
-      'product_data' => [
-        'name' => 'Warenkorb Bestellung'
-      ],
-      'unit_amount' => intval($amount * 100),
-    ],
-    'quantity' => 1,
-  ]],
+  'line_items' => $line_items,
   'mode' => 'payment',
-  'success_url' => 'https://ivm108.informatik.htw-dresden.de/ewa/g15/Beleg/Web-Geschenke-Shop-main/php/success.php',
-  'cancel_url' => 'https://ivm108.informatik.htw-dresden.de/ewa/g15/Beleg/Web-Geschenke-Shop-main/php/cancel.php',
+  'success_url' => 'success.php',
+  'cancel_url' => 'cancel.php'
 ]);
+?>
 
-header("Location: " . $session->url);
-exit;
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe("<?php echo $publicKey ?>");
+  stripe.redirectToCheckout({
+    sessionId: "<?php echo $session->id ?>"
+  });
+</script>
