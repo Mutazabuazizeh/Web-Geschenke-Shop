@@ -12,6 +12,7 @@
 <div id="page-catalog">
   <h1>{{ title }}</h1>
 
+  <!-- Suche -->
   <input
     type="text"
     placeholder="Suche..."
@@ -19,6 +20,7 @@
     data-testid="search-input"
   >
 
+  <!-- Produkte -->
   <div
     class="product"
     v-for="product in filteredProducts"
@@ -60,6 +62,7 @@
 
   <hr>
 
+  <!-- Warenkorb Summary -->
   <p>
     Produkte:
     <span data-testid="cart-total-positions">
@@ -81,10 +84,28 @@
     </span>
   </p>
 
+  <!-- Stripe Checkout (Redirect von PHP) -->
+  <form
+    action="php/stripe.php"
+    method="POST"
+  >
+    <input
+      type="hidden"
+      name="amount"
+      :value="cartGrossPrice.toFixed(2)"
+    >
+
+    <button type="submit">
+      Bestellung abschicken
+    </button>
+  </form>
+
+  <!-- Link zur Warenkorb-Seite -->
   <p>
     <a href="cart.html">Zum Warenkorb</a>
   </p>
 
+  <!-- Message Bar -->
   <div id="message-bar">
     <div
       class="message"
