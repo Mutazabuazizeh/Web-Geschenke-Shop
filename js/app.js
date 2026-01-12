@@ -7,7 +7,8 @@ createApp({
       search: '',
       products: [],
       cart: [],
-      messages: []
+      messages: [],
+      isAdmin: false 
     }
   },
 
@@ -59,7 +60,7 @@ createApp({
         this.cart.push({
           id: product.id,
           title: product.title,
-          price: product.price,
+          price: Number(product.price),
           quantity: 1
         })
         this.addMessage('Produkt hinzugefügt')
@@ -71,7 +72,6 @@ createApp({
       if (!item) return
 
       item.quantity--
-
       if (item.quantity === 0) {
         this.cart = this.cart.filter(p => p.id !== product.id)
         this.addMessage('Produkt entfernt')
@@ -82,8 +82,11 @@ createApp({
   },
 
   mounted() {
+    const user = JSON.parse(localStorage.getItem('user'))
+    this.isAdmin = user && user.role === 'admin'
+
     fetch('php/products.php')
-      .then(res => res.json())
+      .then(r => r.json())
       .then(data => {
         this.products = data.map(p => ({
           ...p,

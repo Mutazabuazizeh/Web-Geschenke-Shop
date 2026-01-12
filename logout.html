@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Logout</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+<div id="logout-page">
+  <h1>Logout</h1>
+
+  <p>Sie wurden erfolgreich abgemeldet.</p>
+
+  <button onclick="logout()">Logout</button>
+  
+  <script>
+    function logout() {
+      localStorage.removeItem('user')
+      window.location.href = 'login.html'
+    }
+  </script>
+
+  <p><a href="index.html">Zurück zum Shop</a></p>
+</div>
+
+</body>
+</html>
