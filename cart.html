@@ -11,12 +11,6 @@
 <div id="page-cart">
   <h1>Warenkorb</h1>
 
-  <script>
-    if (!localStorage.getItem('user')) {
-      window.location.href = 'login.html'
-    }
-  </script>
-
   <div v-if="cart.length === 0">
     <p>Der Warenkorb ist leer.</p>
     <a href="index.html">Zurück zum Shop</a>
@@ -36,7 +30,7 @@
       <tbody>
         <tr v-for="item in cart" :key="item.id">
           <td>{{ item.title }}</td>
-          <td>{{ item.price.toFixed(2) }} €</td>
+          <td>{{ Number(item.price).toFixed(2) }} €</td>
           <td>{{ item.quantity }}</td>
           <td>{{ (item.price * item.quantity).toFixed(2) }} €</td>
           <td>
@@ -52,9 +46,7 @@
     <strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong>
 
     <br><br>
-
     <button id="payBtn">Zur Kasse</button>
-
     <br><br>
     <a href="index.html">Weiter einkaufen</a>
   </div>
@@ -63,24 +55,24 @@
 <script src="js/cart.js"></script>
 
 <script>
-  document.getElementById('payBtn')?.addEventListener('click', () => {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+document.getElementById('payBtn')?.addEventListener('click', () => {
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-    fetch('php/stripe.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Stripe Fehler');
-      }
-    })
-    .catch(() => alert('Serverfehler'));
-  });
+  fetch('php/stripe.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cart })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('Stripe Fehler');
+    }
+  })
+  .catch(() => alert('Serverfehler'));
+});
 </script>
 
 </body>
