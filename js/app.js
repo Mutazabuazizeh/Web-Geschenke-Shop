@@ -1,4 +1,4 @@
-const { createApp } = Vue
+const { createApp } = Vue;
 
 createApp({
   data() {
@@ -7,108 +7,134 @@ createApp({
       search: '',
       products: [],
       cart: [],
-      messages: [],
-      isAdmin: false 
-    }
+      messages: []
+    };
   },
 
   computed: {
     filteredProducts() {
-      const q = this.search.toLowerCase()
       return this.products.filter(p =>
-        p.title.toLowerCase().includes(q)
-      )
+        p.title.toLowerCase().includes(this.search.toLowerCase())
+      );
     },
 
     cartNetPrice() {
       return this.cart.reduce(
-        (s, i) => s + i.price * i.quantity,
+        (s, i) => s + Number(i.price) * i.quantity,
         0
-      )
+      );
     },
 
     cartVat() {
-      return this.cartNetPrice * 0.07
+      return this.cartNetPrice * 0.07;
     },
 
     cartGrossPrice() {
-      return this.cartNetPrice + this.cartVat
+      return this.cartNetPrice + this.cartVat;
     },
 
     cartTotalItems() {
-      return this.cart.reduce((s, i) => s + i.quantity, 0)
+      return this.cart.reduce((s, i) => s + i.quantity, 0);
     },
 
     cartTotalPositions() {
-      return this.cart.length
+      return this.cart.length;
     }
   },
 
   methods: {
-    addMessage(text) {
-      this.messages.push(text)
-      setTimeout(() => this.messages.shift(), 3000)
+    addMessage(msg) {
+      this.messages.push(msg);
+      setTimeout(() => this.messages.shift(), 3000);
     },
 
     orderProduct(product) {
-      const item = this.cart.find(p => p.id === product.id)
+      if (product.stock <= 0) {
+        this.addMessage('Produkt nicht mehr verfügbar');
+        return;
+      }
+
+      const item = this.cart.find(p => p.id === product.id);
 
       if (item) {
-        item.quantity++
-        this.addMessage('Produktmenge erhöht')
+        if (item.quantity >= product.stock) {
+          this.addMessage('Lagerbestand erreicht');
+          return;
+        }
+        item.quantity++;
       } else {
         this.cart.push({
           id: product.id,
           title: product.title,
           price: Number(product.price),
           quantity: 1
-        })
-        this.addMessage('Produkt hinzugefügt')
+        });
       }
     },
 
     removeProduct(product) {
-      const item = this.cart.find(p => p.id === product.id)
-      if (!item) return
+      const item = this.cart.find(p => p.id === product.id);
+      if (!item) return;
 
-      item.quantity--
+      item.quantity--;
       if (item.quantity === 0) {
-        this.cart = this.cart.filter(p => p.id !== product.id)
-        this.addMessage('Produkt entfernt')
-      } else {
-        this.addMessage('Produktmenge reduziert')
+        this.cart = this.cart.filter(p => p.id !== product.id);
       }
+    },
+
+    goToAdmin() {
+      let user = null;
+
+      try {
+        user = JSON.parse(localStorage.getItem('user'));
+      } catch {
+        localStorage.removeItem('user');
+      }
+
+      if (!user) {
+        window.location.href = 'auth.html';
+        return;
+      }
+
+      if (user.role !== 'admin') {
+        this.addMessage('Kein Admin-Zugriff');
+        return;
+      }
+
+      window.location.href = 'admin.html';
     }
   },
 
   mounted() {
-    const user = JSON.parse(localStorage.getItem('user'))
-    this.isAdmin = user && user.role === 'admin'
-
     fetch('php/products.php')
       .then(r => r.json())
-      .then(data => {
-        this.products = data.map(p => ({
+      .then(d => {
+        this.products = d.map(p => ({
           ...p,
-          price: Number(p.price)
-        }))
-      })
-      .catch(() => {
-        this.addMessage('Fehler beim Laden der Produkte')
-      })
+          price: Number(p.price),
+          stock: Number(p.stock)
+        }));
+      });
 
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      this.cart = JSON.parse(savedCart)
+    let savedCart = [];
+
+    try {
+      savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    } catch {
+      localStorage.removeItem('cart');
     }
+
+    this.cart = savedCart.filter(
+      i => i && !isNaN(i.price) && !isNaN(i.quantity)
+    );
   },
 
   watch: {
     cart: {
       deep: true,
-      handler(newCart) {
-        localStorage.setItem('cart', JSON.stringify(newCart))
+      handler(v) {
+        localStorage.setItem('cart', JSON.stringify(v));
       }
     }
   }
-}).mount('#page-catalog')
+}).mount('#page-catalog');
