@@ -1,29 +1,21 @@
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
+require 'db.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true);
+$cart = $input['cart'] ?? [];
 
-if (!$data || !isset($data['cart'])) {
-  http_response_code(400);
-  echo json_encode(["success" => false]);
-  exit;
+if (!is_array($cart) || count($cart) === 0) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Cart empty']);
+    exit;
 }
 
-$order = [
-  "date" => date("Y-m-d H:i:s"),
-  "cart" => $data['cart'],
-  "total" => $data['total']
-];
-
-$file = "orders.json";
-
-$orders = [];
-if (file_exists($file)) {
-  $orders = json_decode(file_get_contents($file), true);
+foreach ($cart as $item) {
+    // Save each order to the database
+    $stmt = $link->prepare("INSERT INTO orders (product, quantity, price) VALUES (?, ?, ?)");
+    $stmt->bind_param("sid", $item['title'], $item['quantity'], $item['price']);
+    $stmt->execute();
 }
 
-$orders[] = $order;
-
-file_put_contents($file, json_encode($orders, JSON_PRETTY_PRINT));
-
-echo json_encode(["success" => true]);
+echo json_encode(['success' => true]);

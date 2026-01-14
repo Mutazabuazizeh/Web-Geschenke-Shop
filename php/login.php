@@ -7,9 +7,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 $username = $data['username'] ?? '';
 $password = $data['password'] ?? '';
 
-$stmt = $link->prepare(
-  "SELECT id, username, role FROM users WHERE username=? AND password=?"
-);
+$stmt = $link->prepare("SELECT id, username, role FROM users WHERE username=? AND password=?");
 $stmt->bind_param("ss", $username, $password);
 $stmt->execute();
 $result = $stmt->get_result();

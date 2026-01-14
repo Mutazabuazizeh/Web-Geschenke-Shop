@@ -18,62 +18,30 @@
 
   <div v-else>
     <table border="1" cellpadding="5">
-      <thead>
-        <tr>
-          <th>Produkt</th>
-          <th>Preis</th>
-          <th>Menge</th>
-          <th>Summe</th>
-          <th>Aktion</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in cart" :key="item.id">
-          <td>{{ item.title }}</td>
-          <td>{{ Number(item.price).toFixed(2) }} €</td>
-          <td>{{ item.quantity }}</td>
-          <td>{{ (item.price * item.quantity).toFixed(2) }} €</td>
-          <td>
-            <button @click="orderProduct(item)">+</button>
-            <button @click="removeProduct(item)">−</button>
-          </td>
-        </tr>
-      </tbody>
+      <tr v-for="item in cart" :key="item.id">
+        <td>{{ item.title }}</td>
+        <td>{{ Number(item.price).toFixed(2) }} €</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ (item.price * item.quantity).toFixed(2) }} €</td>
+        <td>
+          <button @click="orderProduct(item)">+</button>
+          <button @click="removeProduct(item)">−</button>
+        </td>
+      </tr>
     </table>
 
-    <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
-    <p>MwSt (7%): {{ cartVat.toFixed(2) }} €</p>
-    <strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong>
+    <p><strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong></p>
 
-    <br><br>
-    <button id="payBtn">Zur Kasse</button>
+
+    <button @click="pay" style="margin-top:12px;">
+      Zur Kasse
+    </button>
+
     <br><br>
     <a href="index.html">Weiter einkaufen</a>
   </div>
 </div>
 
 <script src="js/cart.js"></script>
-
-<script>
-document.getElementById('payBtn')?.addEventListener('click', () => {
-  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-
-  fetch('php/stripe.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cart })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      alert('Stripe Fehler');
-    }
-  })
-  .catch(() => alert('Serverfehler'));
-});
-</script>
-
 </body>
 </html>

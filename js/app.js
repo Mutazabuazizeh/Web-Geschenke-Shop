@@ -7,7 +7,8 @@ createApp({
       search: '',
       products: [],
       cart: [],
-      messages: []
+      messages: [],
+      isAdmin: false
     };
   },
 

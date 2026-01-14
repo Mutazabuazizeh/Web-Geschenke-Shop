@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Login / Register</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+<div id="auth-page">
+  <h1>{{ isLogin ? 'Login' : 'Registrieren' }}</h1>
+
+  <div v-if="isLogin">
+    <input v-model="username" placeholder="Username">
+    <input v-model="password" type="password" placeholder="Password">
+    <button @click="login">Login</button>
+    <p v-if="error" style="color:red">Login fehlgeschlagen</p>
+<a href="index.html">Weiter einkaufen</a>
+    <p>Kein Konto? <a href="#" @click="toggleForm">Registrieren</a></p>
+  </div>
+
+  <div v-else>
+    <input v-model="username" placeholder="Username">
+    <input v-model="password" type="password" placeholder="Password">
+    <input v-model="role" placeholder="Role (admin)">
+    <button @click="register">Registrieren</button>
+    <p v-if="error" style="color:red">Registrierung fehlgeschlagen</p>
+    <p>Schon ein Konto? <a href="#" @click="toggleForm">Login</a></p>
+  </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      username: '',
+      password: '',
+      role: 'admin',
+      error: false,
+      isLogin: true
+    };
+  },
+  methods: {
+    toggleForm() {
+      this.isLogin = !this.isLogin;
+    },
+    login() {
+      fetch('php/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: this.username, password: this.password })
+      })
+      .then(r => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
+      .then(data => {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = 'index.html';
+      })
+      .catch(() => this.error = true);
+    },
+    register() {
+      fetch('php/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: this.username,
+          password: this.password,
+          role: this.role
+        })
+      })
+      .then(r => {
+        if (!r.ok) throw new Error();
+        this.isLogin = true;
+      })
+      .catch(() => this.error = true);
+    }
+  },
+  mounted() {
+    if (localStorage.getItem('user')) {
+      window.location.href = 'index.html';
+    }
+  }
+}).mount('#auth-page');
+</script>
+
+</body>
+</html>
