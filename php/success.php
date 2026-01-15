@@ -20,7 +20,7 @@ try {
     }
 
     // 1️⃣ get order
-    $stmt = $link->prepare("SELECT cart_json FROM orders WHERE id=?");
+    $stmt = $link->prepare("SELECT cart_json, user_id FROM orders WHERE id=?");
     $stmt->bind_param("i", $orderId);
     $stmt->execute();
     $order = $stmt->get_result()->fetch_assoc();
@@ -31,7 +31,20 @@ try {
 
     $cart = json_decode($order['cart_json'], true);
 
-    // 2️⃣ reduce stock
+    // 2️⃣ get user details
+    $userId = $order['user_id'];
+    $stmt = $link->prepare("SELECT first_name, last_name FROM users WHERE id=?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+
+    if (!$user) {
+        exit('User not found');
+    }
+
+    $buyerName = $user['first_name'] . ' ' . $user['last_name'];
+
+    // 3️⃣ reduce stock
     foreach ($cart as $item) {
         $stmt = $link->prepare(
             "UPDATE products
@@ -47,11 +60,11 @@ try {
         $stmt->execute();
     }
 
-    // 3️⃣ update order status
+    // 4️⃣ update order status and add buyer name
     $stmt = $link->prepare(
-        "UPDATE orders SET status='paid' WHERE id=?"
+        "UPDATE orders SET status='paid', buyer_name=? WHERE id=?"
     );
-    $stmt->bind_param("i", $orderId);
+    $stmt->bind_param("si", $buyerName, $orderId);
     $stmt->execute();
 
 } catch (Exception $e) {
