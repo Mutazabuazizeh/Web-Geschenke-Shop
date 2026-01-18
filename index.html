@@ -8,11 +8,21 @@
 </head>
 <body>
 
+<!-- 
+  HAUPTSEITE (INDEX.HTML)
+  - Zeigt alle verfügbaren Produkte aus der Datenbank
+  - Ermöglicht Hinzufügen/Entfernen von Produkten zum Warenkorb
+  - Berechnet Gesamtpreis mit 7% MwSt
+  - Navigation zu Login, Admin-Bereich und Warenkorb
+-->
+
 <div id="page-catalog">
   <h1>{{ title }}</h1>
 
+  <!-- Suchfeld für Produktfilterung -->
   <input type="text" placeholder="Suche..." v-model="search">
 
+  <!-- Navigation Buttons -->
   <p>
     <button @click="goToLogin">Login</button>
     <button @click="goToAdmin">Admin Bereich</button>
@@ -21,21 +31,25 @@
   </div>
   </p>
 
+  <!-- Produktliste - wird für jedes Produkt wiederholt -->
   <div class="product" v-for="product in filteredProducts" :key="product.id">
     <img :src="product.image" width="150">
     <h3>{{ product.title }}</h3>
     <p>{{ product.price.toFixed(2) }} €</p>
 
+    <!-- Buttons zum Hinzufügen/Entfernen -->
     <button @click="orderProduct(product)" :disabled="product.stock <= 0">+</button>
     <span>{{ cart.find(p => p.id === product.id)?.quantity || 0 }}</span>
     <button @click="removeProduct(product)"
             :disabled="!cart.find(p => p.id === product.id)">−</button>
 
+    <!-- Warnung wenn nicht auf Lager -->
     <p v-if="product.stock <= 0" style="color:red">Nicht auf Lager</p>
   </div>
 
   <hr>
 
+  <!-- Warenkorb-Zusammenfassung -->
   <p>Produkte: {{ cartTotalPositions }}</p>
   <p>Stück: {{ cartTotalItems }}</p>
   <p>Zwischensumme: {{ cartNetPrice.toFixed(2) }} €</p>
@@ -44,6 +58,7 @@
 
   <p><a href="cart.html">Zum Warenkorb</a></p>
 
+  <!-- Nachrichten-Bereich für Fehlermeldungen -->
   <div id="message-bar">
     <div class="message" v-for="(msg, i) in messages" :key="i">{{ msg }}</div>
   </div>

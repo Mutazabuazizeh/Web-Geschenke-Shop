@@ -8,19 +8,31 @@
 </head>
 <body>
 
+<!-- 
+  WARENKORB-SEITE (CART.HTML)
+  - Zeigt alle Produkte im Warenkorb
+  - Ermöglicht Änderung der Mengen
+  - Berechnet Gesamtpreis inkl. MwSt
+  - Initiiert Stripe-Checkout für Zahlung
+-->
+
 <div id="page-cart">
   <h1>Warenkorb</h1>
 
+  <!-- Nachrichten-Bereich für Fehlermeldungen (z.B. Lagerbestand) -->
   <div id="message-bar">
     <div class="message" v-for="(msg, i) in messages" :key="i">{{ msg }}</div>
   </div>
 
+  <!-- Leerer Warenkorb -->
   <div v-if="cart.length === 0">
     <p>Der Warenkorb ist leer.</p>
     <a href="index.html">Zurück zum Shop</a>
   </div>
 
+  <!-- Gefüllter Warenkorb -->
   <div v-else>
+    <!-- Tabelle mit allen Warenkorb-Artikeln -->
     <table border="1" cellpadding="5">
       <tr v-for="item in cart" :key="item.id">
         <td>{{ item.title }}</td>
@@ -28,15 +40,17 @@
         <td>{{ item.quantity }}</td>
         <td>{{ (item.price * item.quantity).toFixed(2) }} €</td>
         <td>
+          <!-- Buttons zum Ändern der Menge -->
           <button @click="orderProduct(item)">+</button>
           <button @click="removeProduct(item)">−</button>
         </td>
       </tr>
     </table>
 
+    <!-- Gesamtpreis (inkl. 7% MwSt) -->
     <p><strong>Gesamt: {{ cartGrossPrice.toFixed(2) }} €</strong></p>
 
-
+    <!-- Button für Stripe-Checkout -->
     <button @click="pay" style="margin-top:12px;">
       Zur Kasse
     </button>
