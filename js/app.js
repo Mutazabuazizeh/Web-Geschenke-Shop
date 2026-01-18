@@ -45,30 +45,40 @@ createApp({
 
   methods: {
     addMessage(msg) {
+      console.log('Message added:', msg);
       this.messages.push(msg);
       setTimeout(() => this.messages.shift(), 3000);
     },
 
     orderProduct(product) {
-      if (product.stock <= 0) {
+      console.log('orderProduct called for:', product.title, 'stock:', product.stock);
+      const stock = Number(product.stock) || 0;
+      
+      if (stock <= 0) {
         this.addMessage('Produkt nicht mehr verfügbar');
         return;
       }
 
       const item = this.cart.find(p => p.id === product.id);
+      const currentQuantity = item ? item.quantity : 0;
+      const requestedQuantity = currentQuantity + 1;
+
+      console.log('currentQuantity:', currentQuantity, 'requested:', requestedQuantity, 'stock:', stock);
+
+      if (requestedQuantity > stock) {
+        this.addMessage(`Nur ${stock} Stück verfügbar. Du versuchst ${requestedQuantity} hinzuzufügen.`);
+        return;
+      }
 
       if (item) {
-        if (item.quantity >= product.stock) {
-          this.addMessage('Lagerbestand erreicht');
-          return;
-        }
         item.quantity++;
       } else {
         this.cart.push({
           id: product.id,
           title: product.title,
           price: Number(product.price),
-          quantity: 1
+          quantity: 1,
+          stock: stock
         });
       }
     },
@@ -105,6 +115,10 @@ createApp({
       window.location.href = 'admin.html';
     },
 
+    goToLogin() {
+      window.location.href = 'auth.html';
+    },
+
     logout() {
       try {
         localStorage.removeItem('user');
@@ -122,7 +136,7 @@ createApp({
         this.products = d.map(p => ({
           ...p,
           price: Number(p.price),
-          stock: Number(p.stock)
+          stock: p.stock ? Number(p.stock) : 0
         }));
       });
 

@@ -3,7 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 require 'db.php';
 
 $result = $link->query(
-  "SELECT id, title, price, image FROM products WHERE stock > 0"
+  "SELECT id, title, price, image, stock FROM products WHERE stock > 0"
 );
 
 $products = [];

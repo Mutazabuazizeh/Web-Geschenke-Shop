@@ -3,7 +3,8 @@ const { createApp } = Vue
 createApp({
   data() {
     return {
-      cart: []
+      cart: [],
+      messages: []
     }
   },
 
@@ -20,7 +21,16 @@ createApp({
   },
 
   methods: {
+    addMessage(msg) {
+      this.messages.push(msg);
+      setTimeout(() => this.messages.shift(), 3000);
+    },
+
     orderProduct(item) {
+      if (item.quantity >= item.stock) {
+        this.addMessage(`Nur ${item.stock} Stück verfügbar. Du versuchst ${item.quantity + 1} hinzuzufügen.`);
+        return;
+      }
       item.quantity++
       this.saveCart()
     },
@@ -97,7 +107,8 @@ createApp({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             cart: this.cart,
-            orderId: orderId
+            orderId: orderId,
+            total: this.cartGrossPrice
           })
         })
 

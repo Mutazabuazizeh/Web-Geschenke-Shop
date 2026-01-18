@@ -26,9 +26,16 @@
     <input v-model="address" placeholder="Adresse">
     <input v-model="username" placeholder="Username">
     <input v-model="password" type="password" placeholder="Password">
-    <input v-model="role" placeholder="Role (admin)">
+    
+    <select v-model="role">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    
+    <input v-if="role === 'admin'" v-model="adminPassword" type="password" placeholder="Admin-Passwort">
+    
     <button @click="register">Registrieren</button>
-    <p v-if="error" style="color:red">Registrierung fehlgeschlagen</p>
+    <p v-if="error" style="color:red">{{ errorMessage }}</p>
     <p>Schon ein Konto? <a href="#" @click="toggleForm">Login</a></p>
   </div>
 </div>
@@ -45,8 +52,10 @@ createApp({
       address: '',
       username: '',
       password: '',
-      role: 'admin',
+      role: 'user',
+      adminPassword: '',
       error: false,
+      errorMessage: '',
       isLogin: true
     };
   },
@@ -71,6 +80,19 @@ createApp({
       .catch(() => this.error = true);
     },
     register() {
+      // Validate all required fields
+      if (!this.firstName || !this.lastName || !this.email || !this.address || !this.username || !this.password) {
+        this.error = true;
+        this.errorMessage = 'Alle Felder sind erforderlich';
+        return;
+      }
+      
+      if (this.role === 'admin' && !this.adminPassword) {
+        this.error = true;
+        this.errorMessage = 'Admin-Passwort erforderlich';
+        return;
+      }
+      
       fetch('php/register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,14 +103,23 @@ createApp({
           address: this.address,
           username: this.username,
           password: this.password,
-          role: this.role
+          role: this.role,
+          adminPassword: this.adminPassword
         })
       })
       .then(r => {
-        if (!r.ok) throw new Error();
+        if (!r.ok) {
+          return r.json().then(data => {
+            throw new Error(data.error || 'Registrierung fehlgeschlagen');
+          });
+        }
         this.isLogin = true;
+        this.error = false;
       })
-      .catch(() => this.error = true);
+      .catch((err) => {
+        this.error = true;
+        this.errorMessage = err.message;
+      });
     }
   },
   mounted() {

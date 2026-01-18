@@ -2,9 +2,9 @@
 header('Content-Type: application/json; charset=utf-8');
 require 'db.php';
 
-// fetch orders with buyer info
+// fetch orders with buyer info and cart items
 $ordersResult = $link->query(
-    "SELECT o.id, o.total, o.status, o.created_at, o.buyer_name, u.address 
+    "SELECT o.id, o.total, o.status, o.created_at, o.buyer_name, u.address, o.cart_json
      FROM orders o 
      LEFT JOIN users u ON o.user_id = u.id 
      ORDER BY o.created_at DESC"
@@ -12,6 +12,8 @@ $ordersResult = $link->query(
 
 $orders = [];
 while ($row = $ordersResult->fetch_assoc()) {
+    $row['items'] = json_decode($row['cart_json'], true) ?? [];
+    unset($row['cart_json']);
     $orders[] = $row;
 }
 

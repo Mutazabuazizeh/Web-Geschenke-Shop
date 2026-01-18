@@ -41,6 +41,7 @@
           <th>ID</th>
           <th>Käufername</th>
           <th>Adresse</th>
+          <th>Produkte</th>
           <th>Total (€)</th>
           <th>Status</th>
           <th>Created At</th>
@@ -51,6 +52,11 @@
           <td>{{ o.id }}</td>
           <td>{{ o.buyer_name || '-' }}</td>
           <td>{{ o.address || '-' }}</td>
+          <td>
+            <div v-for="item in o.items" :key="item.id" style="margin-bottom: 4px;">
+              {{ item.title }} ({{ item.quantity }}x)
+            </div>
+          </td>
           <td>{{ Number(o.total).toFixed(2) }}</td>
           <td>{{ o.status }}</td>
           <td>{{ o.created_at }}</td>

@@ -11,6 +11,10 @@
 <div id="page-cart">
   <h1>Warenkorb</h1>
 
+  <div id="message-bar">
+    <div class="message" v-for="(msg, i) in messages" :key="i">{{ msg }}</div>
+  </div>
+
   <div v-if="cart.length === 0">
     <p>Der Warenkorb ist leer.</p>
     <a href="index.html">Zurück zum Shop</a>

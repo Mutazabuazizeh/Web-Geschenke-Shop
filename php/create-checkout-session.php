@@ -9,6 +9,7 @@ header('Content-Type: application/json; charset=utf-8');
 $data = json_decode(file_get_contents('php://input'), true);
 $cart = $data['cart'] ?? [];
 $orderId = $data['orderId'] ?? null;
+$totalFromFrontend = $data['total'] ?? null;
 
 if (!is_array($cart) || count($cart) === 0) {
   http_response_code(400);
@@ -22,20 +23,27 @@ if (!$orderId) {
   exit;
 }
 
+if ($totalFromFrontend === null) {
+  http_response_code(400);
+  echo json_encode(['error' => 'Total price missing']);
+  exit;
+}
+
 $lineItems = [];
 
-foreach ($cart as $item) {
-  $lineItems[] = [
-    'price_data' => [
-      'currency' => 'eur',
-      'product_data' => [
-        'name' => $item['title']
-      ],
-      'unit_amount' => (int) round($item['price'] * 100)
+// Just use the exact total from frontend as a single line item
+$totalCents = (int) round($totalFromFrontend * 100);
+
+$lineItems[] = [
+  'price_data' => [
+    'currency' => 'eur',
+    'product_data' => [
+      'name' => 'Bestellung'
     ],
-    'quantity' => $item['quantity']
-  ];
-}
+    'unit_amount' => $totalCents
+  ],
+  'quantity' => 1
+];
 
 $baseUrl = 'https://ivm108.informatik.htw-dresden.de/ewa/g15/Beleg/Web-Geschenke-Shop-main/';
 
