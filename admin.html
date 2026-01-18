@@ -39,6 +39,8 @@
       <thead>
         <tr>
           <th>ID</th>
+          <th>Käufername</th>
+          <th>Adresse</th>
           <th>Total (€)</th>
           <th>Status</th>
           <th>Created At</th>
@@ -47,6 +49,8 @@
       <tbody>
         <tr v-for="o in orders" :key="o.id">
           <td>{{ o.id }}</td>
+          <td>{{ o.buyer_name || '-' }}</td>
+          <td>{{ o.address || '-' }}</td>
           <td>{{ Number(o.total).toFixed(2) }}</td>
           <td>{{ o.status }}</td>
           <td>{{ o.created_at }}</td>

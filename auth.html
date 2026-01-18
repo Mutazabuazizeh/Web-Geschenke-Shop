@@ -20,6 +20,10 @@
   </div>
 
   <div v-else>
+    <input v-model="firstName" placeholder="Vorname">
+    <input v-model="lastName" placeholder="Nachname">
+    <input v-model="email" placeholder="E-Mail">
+    <input v-model="address" placeholder="Adresse">
     <input v-model="username" placeholder="Username">
     <input v-model="password" type="password" placeholder="Password">
     <input v-model="role" placeholder="Role (admin)">
@@ -35,6 +39,10 @@ const { createApp } = Vue;
 createApp({
   data() {
     return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      address: '',
       username: '',
       password: '',
       role: 'admin',
@@ -67,6 +75,10 @@ createApp({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          first_name: this.firstName,
+          last_name: this.lastName,
+          email: this.email,
+          address: this.address,
           username: this.username,
           password: this.password,
           role: this.role

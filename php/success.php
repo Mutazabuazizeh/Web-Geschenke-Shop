@@ -33,13 +33,18 @@ try {
 
     // 2️⃣ get user details
     $userId = $order['user_id'];
+    
+    if (!$userId) {
+        exit('ERROR: user_id is NULL or missing in order. Order data: ' . json_encode($order));
+    }
+    
     $stmt = $link->prepare("SELECT first_name, last_name FROM users WHERE id=?");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
 
     if (!$user) {
-        exit('User not found');
+        exit('ERROR: User not found for id=' . $userId . '. Order user_id=' . $order['user_id']);
     }
 
     $buyerName = $user['first_name'] . ' ' . $user['last_name'];

@@ -4,6 +4,12 @@ require 'db.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
 $cart = $input['cart'] ?? [];
+$userId = $input['userId'] ?? null;
+$total = $input['total'] ?? 0;
+
+// Debug logging
+error_log('Order.php input: ' . json_encode($input));
+error_log('userId received: ' . var_export($userId, true));
 
 if (!is_array($cart) || count($cart) === 0) {
     http_response_code(400);
@@ -11,11 +17,23 @@ if (!is_array($cart) || count($cart) === 0) {
     exit;
 }
 
-foreach ($cart as $item) {
-    // Save each order to the database
-    $stmt = $link->prepare("INSERT INTO orders (product, quantity, price) VALUES (?, ?, ?)");
-    $stmt->bind_param("sid", $item['title'], $item['quantity'], $item['price']);
-    $stmt->execute();
+if (!$userId) {
+    http_response_code(400);
+    echo json_encode(['error' => 'User not logged in', 'userId' => $userId, 'input' => $input]);
+    exit;
 }
 
-echo json_encode(['success' => true]);
+// Save the entire order with cart_json
+$cartJson = json_encode($cart);
+$status = 'pending';
+
+$stmt = $link->prepare("INSERT INTO orders (user_id, cart_json, total, status) VALUES (?, ?, ?, ?)");
+$stmt->bind_param("isss", $userId, $cartJson, $total, $status);
+
+if ($stmt->execute()) {
+    $orderId = $link->insert_id;
+    echo json_encode(['success' => true, 'orderId' => $orderId]);
+} else {
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to create order']);
+}

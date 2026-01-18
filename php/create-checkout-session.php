@@ -8,10 +8,17 @@ header('Content-Type: application/json; charset=utf-8');
 
 $data = json_decode(file_get_contents('php://input'), true);
 $cart = $data['cart'] ?? [];
+$orderId = $data['orderId'] ?? null;
 
 if (!is_array($cart) || count($cart) === 0) {
   http_response_code(400);
   echo json_encode(['error' => 'Cart empty']);
+  exit;
+}
+
+if (!$orderId) {
+  http_response_code(400);
+  echo json_encode(['error' => 'Order ID missing']);
   exit;
 }
 
@@ -36,7 +43,7 @@ $session = \Stripe\Checkout\Session::create([
   'payment_method_types' => ['card'],
   'line_items' => $lineItems,
   'mode' => 'payment',
-  'success_url' => $baseUrl . 'success.php?session_id={CHECKOUT_SESSION_ID}',
+  'success_url' => $baseUrl . 'success.php?session_id={CHECKOUT_SESSION_ID}&order_id=' . $orderId,
   'cancel_url' => $baseUrl . 'cart.html'
 ]);
 
