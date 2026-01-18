@@ -8,9 +8,32 @@
 </head>
 <body>
 
+<!-- 
+  ADMIN.HTML - Admin-Dashboard
+  
+  Zugriff: Nur für eingeloggte User mit role="admin"
+  
+  Funktionen:
+  1. BESTELLUNGS-ÜBERSICHT (Bestellungen-Tabelle)
+     - Zeigt alle Bestellungen mit Käuferdaten
+     - Spalte "Produkte": Zeigt alle bestellten Items mit Menge
+     - Daten kommen von admin.php (parsed cart_json)
+  
+  2. LAGERBESTAND-VERWALTUNG (Produkte-Tabelle)
+     - Zeigt alle Produkte mit aktuellem Stock
+     - Stock kann per Eingabefeld geändert werden
+     - "Speichern"-Button pro Produkt -> update-stock.php
+  
+  3. SICHERHEIT
+     - Zugriffs-Prüfung: Nur admin-role hat Zugriff
+     - Bei unautorisierten Usern: Weiterleitung zu auth.html
+-->
+
+<!-- ZUGRIFFS-KONTROLLE: Nur Admins dürfen diese Seite sehen -->
 <script>
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   if (!user || user.role !== 'admin') {
+    // Nicht eingeloggt oder keine Admin-Rolle -> Umleitung zu Login
     window.location.href = 'auth.html';
   }
 </script>
@@ -18,17 +41,22 @@
 <div id="admin-page">
   <h1>Admin Bereich</h1>
 
+  <!-- LOGOUT-BUTTON -->
   <div style="margin-bottom: 16px;">
     <button @click="logout">Logout</button>
   </div>
 
+  <!-- FEHLERANZEIGE -->
   <div v-if="error" style="color:red; margin-bottom: 12px;">
     {{ error }}
   </div>
 
+  <!-- LADE-ANZEIGE -->
   <div v-if="loading">Loading...</div>
 
+  <!-- HAUPTINHALT -->
   <div v-else>
+    <!-- BESTELLUNGEN-TABELLE -->
     <h2>Bestellungen</h2>
 
     <div v-if="orders.length === 0">
@@ -41,7 +69,7 @@
           <th>ID</th>
           <th>Käufername</th>
           <th>Adresse</th>
-          <th>Produkte</th>
+          <th>Produkte</th>         <!-- Zeigt bestellte Items aus cart_json -->
           <th>Total (€)</th>
           <th>Status</th>
           <th>Created At</th>
@@ -53,6 +81,7 @@
           <td>{{ o.buyer_name || '-' }}</td>
           <td>{{ o.address || '-' }}</td>
           <td>
+            <!-- Items aus cart_json werden in admin.php geparst -->
             <div v-for="item in o.items" :key="item.id" style="margin-bottom: 4px;">
               {{ item.title }} ({{ item.quantity }}x)
             </div>
@@ -66,6 +95,7 @@
 
     <hr style="margin: 24px 0;">
 
+    <!-- PRODUKTE-TABELLE (LAGERBESTAND-VERWALTUNG) -->
     <h2>Produkte (Lagerbestand bearbeiten)</h2>
 
     <div v-if="products.length === 0">
@@ -78,8 +108,8 @@
           <th>ID</th>
           <th>Title</th>
           <th>Price (€)</th>
-          <th>Stock</th>
-          <th>Save</th>
+          <th>Stock</th>             <!-- Lagerbestand editierbar -->
+          <th>Save</th>              <!-- Speichern-Button pro Produkt -->
         </tr>
       </thead>
       <tbody>
@@ -88,9 +118,11 @@
           <td>{{ p.title }}</td>
           <td>{{ Number(p.price).toFixed(2) }}</td>
           <td style="width:140px;">
+            <!-- Eingabefeld für neuen Stock-Wert -->
             <input type="number" min="0" v-model.number="p.stock" style="width: 90px;">
           </td>
           <td style="width:120px;">
+            <!-- Speichern ruft saveStock() auf -> update-stock.php -->
             <button @click="saveStock(p)">Speichern</button>
           </td>
         </tr>
@@ -101,6 +133,23 @@
 </div>
 
 <script>
+/**
+ * ADMIN-PAGE LOGIC
+ * 
+ * DATA-EIGENSCHAFTEN:
+ * - loading: Lädt Daten von admin.php
+ * - error: Fehlermeldung (z.B. Server-Fehler, Autorisierungsfehler)
+ * - orders: Array aller Bestellungen mit geparstem cart_json (items)
+ * - products: Array aller Produkte mit aktuellem Stock
+ * 
+ * METHODEN:
+ * - logout(): Entfernt User aus localStorage, leitet zu auth.html
+ * - loadAdminData(): Lädt Bestellungen und Produkte von admin.php
+ * - saveStock(product): Speichert neuen Stock-Wert über update-stock.php
+ * 
+ * MOUNTED:
+ * - Lädt initial Admin-Daten
+ */
 const { createApp } = Vue;
 
 createApp({
@@ -108,17 +157,34 @@ createApp({
     return {
       loading: true,
       error: '',
-      orders: [],
-      products: []
+      orders: [],      // Bestellungen aus admin.php
+      products: []     // Produkte aus admin.php
     };
   },
 
   methods: {
+    /**
+     * LOGOUT-METHODE
+     * - Entfernt User aus localStorage
+     * - Leitet zu auth.html weiter
+     */
     logout() {
       localStorage.removeItem('user');
       window.location.href = 'auth.html';
     },
 
+    /**
+     * LÄDT ADMIN-DATEN
+     * 
+     * Request an admin.php mit userId und role
+     * Response enthält:
+     * - orders: Array mit geparstem cart_json (items-Feld)
+     * - products: Array aller Produkte mit Stock
+     * 
+     * Fehlerbehandlung:
+     * - Prüft ob Response valides JSON ist
+     * - Bei Fehler: Zeigt error-Nachricht an
+     */
     async loadAdminData() {
       this.loading = true;
       this.error = '';
@@ -132,9 +198,11 @@ createApp({
           body: JSON.stringify({ userId: user?.id, role: user?.role })
         });
 
+        // Raw Response lesen (für Debugging bei PHP-Fehlern)
         const text = await res.text();
         console.log('admin.php raw response:', text);
 
+        // JSON parsen
         let data;
         try {
           data = JSON.parse(text);
@@ -144,10 +212,12 @@ createApp({
 
         console.log('admin.php json:', data);
 
+        // HTTP-Status prüfen
         if (!res.ok) {
           throw new Error(data?.error || 'Admin request failed');
         }
 
+        // Daten in Vue-State speichern
         this.orders = data.orders || [];
         this.products = data.products || [];
       } catch (e) {
@@ -158,12 +228,26 @@ createApp({
       }
     },
 
+    /**
+     * SPEICHERT NEUEN STOCK-WERT
+     * 
+     * @param {Object} product - Produkt-Objekt mit id und stock
+     * 
+     * Ablauf:
+     * 1. Validiert Stock-Wert (muss Zahl >= 0 sein)
+     * 2. Sendet Request an update-stock.php
+     * 3. Bei Erfolg: Lädt Admin-Daten neu (refresh)
+     * 
+     * Sicherheit:
+     * - Sendet userId und role zur Autorisierungs-Prüfung
+     */
     async saveStock(product) {
       this.error = '';
 
       const user = JSON.parse(localStorage.getItem('user') || 'null');
       const stock = Number(product.stock);
 
+      // VALIDIERUNG: Stock muss gültige Zahl >= 0 sein
       if (Number.isNaN(stock) || stock < 0) {
         this.error = 'Stock value invalid';
         return;
@@ -181,9 +265,11 @@ createApp({
           })
         });
 
+        // Raw Response lesen (für Debugging)
         const text = await res.text();
         console.log('update-stock.php raw response:', text);
 
+        // JSON parsen
         let data;
         try {
           data = JSON.parse(text);
@@ -191,10 +277,12 @@ createApp({
           throw new Error('Response is not valid JSON (check PHP error output).');
         }
 
+        // Fehlerbehandlung
         if (!res.ok || !data.success) {
           throw new Error(data?.error || 'Failed to update stock');
         }
 
+        // Erfolg: Daten neu laden um aktuellen Stock anzuzeigen
         await this.loadAdminData();
       } catch (e) {
         console.error(e);
@@ -203,6 +291,10 @@ createApp({
     }
   },
 
+  /**
+   * MOUNTED LIFECYCLE
+   * Lädt initial die Admin-Daten (Bestellungen + Produkte)
+   */
   mounted() {
     this.loadAdminData();
   }

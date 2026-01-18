@@ -7,9 +7,22 @@
 </head>
 <body>
 
+<!-- 
+  AUTH.HTML - Login und Registrierung
+  
+  Funktionen:
+  - Umschaltbar zwischen Login und Registrierungs-Formular
+  - Login: Authentifizierung über login.php, speichert User-Daten in localStorage
+  - Registrierung: Erstellt neuen User über register.php
+    * Alle Felder (Vorname, Nachname, E-Mail, Adresse, Username, Password) sind Pflichtfelder
+    * Bei Rolle "Admin": Zusätzliches Admin-Passwort-Feld erscheint
+    * Admin-Passwort wird von register.php validiert (Passwort: "admin123")
+-->
+
 <div id="auth-page">
   <h1>{{ isLogin ? 'Login' : 'Registrieren' }}</h1>
 
+  <!-- LOGIN-FORMULAR -->
   <div v-if="isLogin">
     <input v-model="username" placeholder="Username">
     <input v-model="password" type="password" placeholder="Password">
@@ -19,7 +32,9 @@
     <p>Kein Konto? <a href="#" @click="toggleForm">Registrieren</a></p>
   </div>
 
+  <!-- REGISTRIERUNGS-FORMULAR -->
   <div v-else>
+    <!-- Pflichtfelder für alle Benutzer -->
     <input v-model="firstName" placeholder="Vorname">
     <input v-model="lastName" placeholder="Nachname">
     <input v-model="email" placeholder="E-Mail">
@@ -27,11 +42,13 @@
     <input v-model="username" placeholder="Username">
     <input v-model="password" type="password" placeholder="Password">
     
+    <!-- Rollen-Auswahl: User oder Admin -->
     <select v-model="role">
       <option value="user">User</option>
       <option value="admin">Admin</option>
     </select>
     
+    <!-- Admin-Passwort-Feld (erscheint nur wenn Rolle = Admin) -->
     <input v-if="role === 'admin'" v-model="adminPassword" type="password" placeholder="Admin-Passwort">
     
     <button @click="register">Registrieren</button>
@@ -41,6 +58,24 @@
 </div>
 
 <script>
+/**
+ * AUTH-PAGE LOGIC - Login und Registrierung
+ * 
+ * DATA-EIGENSCHAFTEN:
+ * - firstName, lastName, email, address, username, password: Formular-Felder
+ * - role: "user" oder "admin" (Standard: "user")
+ * - adminPassword: Extra Passwort für Admin-Registrierung (Passwort: "admin123")
+ * - error, errorMessage: Fehlerstatus und -nachricht
+ * - isLogin: Umschaltung zwischen Login (true) und Registrierung (false)
+ * 
+ * METHODEN:
+ * - toggleForm(): Wechselt zwischen Login und Registrierungs-Formular
+ * - login(): Sendet Credentials an login.php, speichert User in localStorage, leitet zu index.html
+ * - register(): Validiert alle Pflichtfelder, sendet Daten an register.php
+ * 
+ * MOUNTED:
+ * - Prüft ob User bereits eingeloggt ist -> Weiterleitung zu index.html
+ */
 const { createApp } = Vue;
 
 createApp({
@@ -52,17 +87,25 @@ createApp({
       address: '',
       username: '',
       password: '',
-      role: 'user',
-      adminPassword: '',
+      role: 'user',          // Standard: User (nicht Admin)
+      adminPassword: '',     // Nur bei role=admin erforderlich
       error: false,
       errorMessage: '',
-      isLogin: true
+      isLogin: true          // Standard: Login-Ansicht
     };
   },
   methods: {
+    // Wechselt zwischen Login- und Registrierungs-Formular
     toggleForm() {
       this.isLogin = !this.isLogin;
     },
+    
+    /**
+     * LOGIN-METHODE
+     * - Sendet Username und Password an login.php
+     * - Bei Erfolg: Speichert User-Objekt in localStorage und leitet zu index.html
+     * - Bei Fehler: Zeigt Fehlermeldung an
+     */
     login() {
       fetch('php/login.php', {
         method: 'POST',
@@ -74,25 +117,41 @@ createApp({
         return r.json();
       })
       .then(data => {
+        // User-Daten in localStorage speichern
         localStorage.setItem('user', JSON.stringify(data.user));
+        // Zur Startseite weiterleiten
         window.location.href = 'index.html';
       })
       .catch(() => this.error = true);
     },
+    
+    /**
+     * REGISTRIERUNGS-METHODE
+     * 
+     * VALIDIERUNG:
+     * 1. Prüft ob alle Pflichtfelder ausgefüllt sind
+     * 2. Bei Rolle=Admin: Prüft ob Admin-Passwort eingegeben wurde
+     * 3. Sendet Daten an register.php (validiert dort das Admin-Passwort)
+     * 
+     * Bei Erfolg: Wechselt zum Login-Formular
+     * Bei Fehler: Zeigt spezifische Fehlermeldung an
+     */
     register() {
-      // Validate all required fields
+      // VALIDIERUNG: Alle Felder erforderlich
       if (!this.firstName || !this.lastName || !this.email || !this.address || !this.username || !this.password) {
         this.error = true;
         this.errorMessage = 'Alle Felder sind erforderlich';
         return;
       }
       
+      // VALIDIERUNG: Admin-Passwort bei Admin-Rolle erforderlich
       if (this.role === 'admin' && !this.adminPassword) {
         this.error = true;
         this.errorMessage = 'Admin-Passwort erforderlich';
         return;
       }
       
+      // Registrierungs-Request an Backend
       fetch('php/register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,7 +163,7 @@ createApp({
           username: this.username,
           password: this.password,
           role: this.role,
-          adminPassword: this.adminPassword
+          adminPassword: this.adminPassword  // Wird nur bei role=admin geprüft
         })
       })
       .then(r => {
@@ -113,15 +172,23 @@ createApp({
             throw new Error(data.error || 'Registrierung fehlgeschlagen');
           });
         }
+        // Erfolg: Zurück zum Login-Formular
         this.isLogin = true;
         this.error = false;
       })
       .catch((err) => {
+        // Fehler: Zeige spezifische Fehlermeldung
         this.error = true;
         this.errorMessage = err.message;
       });
     }
   },
+  
+  /**
+   * MOUNTED LIFECYCLE
+   * Prüft ob User bereits eingeloggt ist
+   * Wenn ja: Direkte Weiterleitung zu index.html
+   */
   mounted() {
     if (localStorage.getItem('user')) {
       window.location.href = 'index.html';
