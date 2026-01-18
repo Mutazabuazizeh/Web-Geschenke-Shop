@@ -103,6 +103,15 @@ createApp({
       }
 
       window.location.href = 'admin.html';
+    },
+
+    logout() {
+      try {
+        localStorage.removeItem('user');
+      } catch (e) {
+        // Private mode might block localStorage
+      }
+      window.location.href = 'auth.html';
     }
   },
 
